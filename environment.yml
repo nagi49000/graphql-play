@@ -1,0 +1,13 @@
+name: graphql_play_env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - fastapi>=0.62.0
+  - pip>=20.3.3
+  - pytest>=6.2.1
+  - pytest-cov>=2.10.1
+  - python>=3.9.1
+  - uvicorn>=0.13.2
+  - pip:
+    - ariadne>=0.12.0
