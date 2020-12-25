@@ -8,6 +8,7 @@ dependencies:
   - fastapi>=0.62.0
   - flake8>=3.8.4
   - graphene>=2.1.8
+  - graphene-sqlalchemy>=2.3.0
   - jedi>=0.17.2
   - pip>=20.3.3
   - pytest>=6.2.1
