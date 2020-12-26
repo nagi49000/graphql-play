@@ -2,7 +2,6 @@ from ariadne import ObjectType
 from ariadne import QueryType
 from ariadne import gql
 from ariadne import make_executable_schema
-from ariadne import load_schema_from_path
 from ariadne.asgi import GraphQL
 
 # Define types using Schema Definition Language (https://graphql.org/learn/schema/)
