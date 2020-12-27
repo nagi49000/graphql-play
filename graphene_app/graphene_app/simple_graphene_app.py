@@ -44,18 +44,24 @@ class ToySimples(gp.ObjectType):
 # Database example
 # Database specific stuff
 
-this_dir = os.path.dirname(os.path.abspath(__file__))
-sql_db = 'sqlite:///' + os.path.join(this_dir, '..', '..', 'data', 'chinook.db')
-sql_engine = sa.engine.create_engine(sql_db)
-db_session = scoped_session(sessionmaker(autocommit=False,
-                                         autoflush=False,
-                                         bind=sql_engine))
-Base = declarative_base(cls=DeferredReflection)
-Base.query = db_session.query_property()
+def get_declarative_base_class_and_engine(sql_db=None):
+    if sql_db is None:
+        this_dir = os.path.dirname(os.path.abspath(__file__))
+        sql_db = 'sqlite:///' + os.path.join(this_dir, '..', '..', 'data', 'chinook.db')
+    sql_engine = sa.engine.create_engine(sql_db)
+    db_session = scoped_session(sessionmaker(autocommit=False,
+                                             autoflush=False,
+                                             bind=sql_engine))
+    Base = declarative_base(cls=DeferredReflection)
+    Base.query = db_session.query_property()
+    return sql_engine, Base
 
+
+sql_engine, Base = get_declarative_base_class_and_engine()
 
 # Build up the Data models, using sqlalchemy.ext.declarative to
 # pull in the models from the SQL DB Metadata
+
 
 class CustomerModel(Base):
     __tablename__ = 'customers'
@@ -190,7 +196,7 @@ class Chinook(gp.ObjectType):
     all_invoice_items = SQLAlchemyConnectionField(InvoiceItem.connection)
     all_playlist_tracks = SQLAlchemyConnectionField(PlaylistTrack.connection)
 
-    def resolve_version(root, info):
+    async def resolve_version(root, info):
         return "0.0.1"
 
 
