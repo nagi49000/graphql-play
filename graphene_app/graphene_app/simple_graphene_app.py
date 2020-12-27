@@ -195,11 +195,13 @@ class Chinook(gp.ObjectType):
 
 
 def get_app():
-    routes = [Route("/simple-graphene/api/v1/",
-                    GraphQLApp(schema=gp.Schema(query=ToySimples))),
-              Route("/chinook-graphene/api/v1/",
-                    GraphQLApp(schema=gp.Schema(query=Chinook, types=[Customer]),
-                               executor_class=AsyncioExecutor))]
+    routes = [
+        Route("/simple-graphene/api/v1/",
+              GraphQLApp(schema=gp.Schema(query=ToySimples))),
+        Route("/chinook-graphene/api/v1/",
+              GraphQLApp(schema=gp.Schema(query=Chinook, types=[Customer]),
+                         executor_class=AsyncioExecutor))
+    ]
     return Starlette(routes=routes)
 
 
