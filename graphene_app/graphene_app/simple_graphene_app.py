@@ -1,9 +1,12 @@
 import os
 import sqlalchemy as sa
-from sqlalchemy.ext.declarative import declarative_base, DeferredReflection
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import DeferredReflection
+from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import sessionmaker
 import graphene as gp
-from graphene_sqlalchemy import SQLAlchemyObjectType, SQLAlchemyConnectionField
+from graphene_sqlalchemy import SQLAlchemyObjectType
+from graphene_sqlalchemy import SQLAlchemyConnectionField
 from graphql.execution.executors.asyncio import AsyncioExecutor
 from starlette.routing import Route
 from starlette.applications import Starlette
@@ -195,9 +198,17 @@ class Chinook(gp.ObjectType):
     all_tracks = SQLAlchemyConnectionField(Track.connection)
     all_invoice_items = SQLAlchemyConnectionField(InvoiceItem.connection)
     all_playlist_tracks = SQLAlchemyConnectionField(PlaylistTrack.connection)
+    customer = gp.NonNull(gp.List(gp.NonNull(Customer)),
+                          city=gp.String(default_value=''))
 
     async def resolve_version(root, info):
         return "0.0.1"
+
+    async def resolve_customer(root, info, city):
+        query = Customer.get_query(info=info)
+        if city:
+            query = query.filter(CustomerModel.City == city)
+        return query.all()
 
 
 def get_app():
