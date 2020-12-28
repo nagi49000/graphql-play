@@ -148,3 +148,39 @@ def test_chinook_graphene_all_playlist_tracks():
                json={'query': '{allPlaylistTracks(first: 1) {edges {node {TrackId}}}}'})
     assert r.status_code == 200
     assert json.loads(r.text) == {'data': {'allPlaylistTracks': {'edges': [{'node': {'TrackId': '1'}}]}}}
+
+
+def test_chinook_graphene_customer():
+    c = TestClient(get_app())
+    r = c.post('/chinook-graphene/api/v1/',
+               json={'query': '{customer(city:"Paris") {FirstName, City}}'})
+    assert r.status_code == 200
+    assert json.loads(r.text) == {
+        "data": {
+            "customer": [
+                {
+                    "FirstName": "Camille",
+                    "City": "Paris"
+                },
+                {
+                    "FirstName": "Dominique",
+                    "City": "Paris"
+                }
+            ]
+        }
+    }
+
+    r = c.post('/chinook-graphene/api/v1/',
+               json={'query': '{customer{FirstName, City, State, Country}}'})
+    assert r.status_code == 200
+    assert len(json.loads(r.text)['data']['customer']) == 59
+
+    r = c.post('/chinook-graphene/api/v1/',
+               json={'query': '{customer(country: "USA"){FirstName, City, State, Country}}'})
+    assert r.status_code == 200
+    assert len(json.loads(r.text)['data']['customer']) == 13
+
+    r = c.post('/chinook-graphene/api/v1/',
+               json={'query': '{customer(country: "USA", state: "CA"){FirstName, City, State, Country}}'})
+    assert r.status_code == 200
+    assert len(json.loads(r.text)['data']['customer']) == 3

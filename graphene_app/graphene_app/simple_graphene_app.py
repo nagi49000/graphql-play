@@ -199,15 +199,21 @@ class Chinook(gp.ObjectType):
     all_invoice_items = SQLAlchemyConnectionField(InvoiceItem.connection)
     all_playlist_tracks = SQLAlchemyConnectionField(PlaylistTrack.connection)
     customer = gp.NonNull(gp.List(gp.NonNull(Customer)),
-                          city=gp.String(default_value=''))
+                          city=gp.String(default_value=''),
+                          state=gp.String(default_value=''),
+                          country=gp.String(default_value=''))
 
     async def resolve_version(root, info):
         return "0.0.1"
 
-    async def resolve_customer(root, info, city):
+    async def resolve_customer(root, info, city, state, country):
         query = Customer.get_query(info=info)
         if city:
             query = query.filter(CustomerModel.City == city)
+        if state:
+            query = query.filter(CustomerModel.State == state)
+        if country:
+            query = query.filter(CustomerModel.Country == country)
         return query.all()
 
 
