@@ -1,3 +1,4 @@
+import datetime
 import os
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
@@ -187,7 +188,7 @@ class Chinook(gp.ObjectType):
     version = gp.String()
     # use SQLAlchemyConnectionField to build up queries for
     # Graphene objects above. Standard queries pull ALL rows
-    node = gp.relay.Node.Field()
+    node = gp.relay.Node.Field()  # not sure why this is needed...
     all_customers = SQLAlchemyConnectionField(Customer.connection)
     all_employees = SQLAlchemyConnectionField(Employee.connection)
     all_artists = SQLAlchemyConnectionField(Artist.connection)
@@ -203,6 +204,9 @@ class Chinook(gp.ObjectType):
                           city=gp.String(default_value=''),
                           state=gp.String(default_value=''),
                           country=gp.String(default_value=''))
+    employee = gp.NonNull(gp.List(gp.NonNull(Employee)),
+                          min_birth_date=gp.DateTime(default_value="1900-01-01T00:00:00"),
+                          max_birth_date=gp.DateTime(default_value="2100-01-01T00:00:00"))
 
     async def resolve_version(root, info):
         return "0.0.1"
@@ -215,6 +219,12 @@ class Chinook(gp.ObjectType):
             query = query.filter(CustomerModel.State == state)
         if country:
             query = query.filter(CustomerModel.Country == country)
+        return query.all()
+
+    async def resolve_employee(root, info, min_birth_date, max_birth_date):
+        query = Employee.get_query(info=info)
+        query = query.filter(EmployeeModel.BirthDate >= min_birth_date)
+        query = query.filter(EmployeeModel.BirthDate <= max_birth_date)
         return query.all()
 
 

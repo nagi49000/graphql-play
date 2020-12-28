@@ -153,9 +153,10 @@ def test_chinook_graphene_all_playlist_tracks():
 def test_chinook_graphene_all_employees():
     c = TestClient(get_app())
     r = c.post('/chinook-graphene/api/v1/',
-               json={'query': '{allEmployees(first: 1) {edges {node {Title}}}}'})
+               json={'query': '{allEmployees(first: 1) {edges {node {BirthDate}}}}'})
     assert r.status_code == 200
-    assert json.loads(r.text) == {'data': {'allEmployees': {'edges': [{'node': {'Title': 'General Manager'}}]}}}
+    assert json.loads(r.text) == {'data': {'allEmployees': {
+        'edges': [{'node': {'BirthDate': '1962-02-18T00:00:00'}}]}}}
 
 
 def test_chinook_graphene_customer():
@@ -192,3 +193,50 @@ def test_chinook_graphene_customer():
                json={'query': '{customer(country: "USA", state: "CA"){FirstName, City, State, Country}}'})
     assert r.status_code == 200
     assert len(json.loads(r.text)['data']['customer']) == 3
+
+
+def test_chinook_graphene_employee():
+    c = TestClient(get_app())
+    r = c.post('/chinook-graphene/api/v1/',
+               json={'query': '{employee {FirstName, BirthDate}}'})
+    assert r.status_code == 200
+    assert json.loads(r.text) == {
+        'data': {
+            'employee': [
+                {'BirthDate': '1962-02-18T00:00:00', 'FirstName': 'Andrew'},
+                {'BirthDate': '1958-12-08T00:00:00', 'FirstName': 'Nancy'},
+                {'BirthDate': '1973-08-29T00:00:00', 'FirstName': 'Jane'},
+                {'BirthDate': '1947-09-19T00:00:00', 'FirstName': 'Margaret'},
+                {'BirthDate': '1965-03-03T00:00:00', 'FirstName': 'Steve'},
+                {'BirthDate': '1973-07-01T00:00:00', 'FirstName': 'Michael'},
+                {'BirthDate': '1970-05-29T00:00:00', 'FirstName': 'Robert'},
+                {'BirthDate': '1968-01-09T00:00:00', 'FirstName': 'Laura'}
+            ]}}
+
+    r = c.post('/chinook-graphene/api/v1/',
+               json={'query': '{employee(minBirthDate:"1972-01-01T00:00:00") {FirstName, BirthDate}}'})
+    assert r.status_code == 200
+    assert json.loads(r.text) == {
+        'data': {
+            'employee': [
+                {'BirthDate': '1973-08-29T00:00:00', 'FirstName': 'Jane'},
+                {'BirthDate': '1973-07-01T00:00:00', 'FirstName': 'Michael'}
+            ]}}
+
+    r = c.post('/chinook-graphene/api/v1/',
+               json={'query': '{employee(maxBirthDate:"1950-01-01T00:00:00") {FirstName, BirthDate}}'})
+    assert r.status_code == 200
+    assert json.loads(r.text) == {
+        'data': {
+            'employee': [
+                {'BirthDate': '1947-09-19T00:00:00', 'FirstName': 'Margaret'}
+            ]}}
+
+    r = c.post('/chinook-graphene/api/v1/',
+               json={'query': '{employee(minBirthDate:"1964-01-01T00:00:00", maxBirthDate:"1966-01-01T00:00:00") {FirstName, BirthDate}}'})
+    assert r.status_code == 200
+    assert json.loads(r.text) == {
+        'data': {
+            'employee': [
+                {'BirthDate': '1965-03-03T00:00:00', 'FirstName': 'Steve'}
+            ]}}
