@@ -13,6 +13,8 @@ from starlette.applications import Starlette
 from starlette.graphql import GraphQLApp
 
 # simple no database example
+# involves defining a GraphQL schema ...
+# ... by first defining objects that will build up the schema ...
 
 
 class Person(gp.ObjectType):
@@ -20,6 +22,8 @@ class Person(gp.ObjectType):
     lastName = gp.String(required=True)
     age = gp.Int(required=True)
     fullName = gp.String()
+
+# ... and then defining the queries/mutations for the schema
 
 
 class ToySimples(gp.ObjectType):
@@ -45,7 +49,14 @@ class ToySimples(gp.ObjectType):
 
 
 # Database example
-# Database specific stuff
+# Multiple moving parts where the things to be defined are
+# - data model derived from reflecting tables in SQL database
+# - reflect models as Graph QL objects to be used in the Graph QL schema
+# - define the queries/mutations that will build up the Graph QL schema
+
+# Database specific stuff. Before building the Graph QL schema, first build up
+# the data model from the database (i.e. reflect the SQL schemas in the database)
+# by first building a data model base class that sees the SQL engine and is able to make sessions...
 
 def get_declarative_base_class_and_engine(sql_db=None):
     if sql_db is None:
@@ -62,13 +73,13 @@ def get_declarative_base_class_and_engine(sql_db=None):
 
 sql_engine, Base = get_declarative_base_class_and_engine()
 
+# ... and then create data models for each table, that points at the table in the database
 # Build up the Data models, using sqlalchemy.ext.declarative to
-# pull in the models from the SQL DB Metadata
+# pull in the models from the SQL DB Metadata ...
 
 
 class CustomerModel(Base):
     __tablename__ = 'customers'
-    # CustomerId = sa.Column(sa.Integer, primary_key=True)
 
 
 class ArtistModel(Base):
@@ -111,10 +122,13 @@ class PlaylistTrackModel(Base):
     __tablename__ = 'playlist_track'
 
 
+# this lie populates the data models with SQL objects and related queries,
+# so that the models describe the tables, can be used to make
+# SQL queries via SQL Alchemy
 Base.prepare(sql_engine)
 
-# GraphQL schema specific stuff
-# Build up the Graphene objects that will make up the Graph QL schema
+# ... and then build objects in the Graph QL schema that relate directly to the data model ...
+# specifying the model plumbs into the data models above, specifying the interface plumbs into the SQLAlchemyConnectionField in the Graph QL queries below
 
 
 class Customer(SQLAlchemyObjectType):
@@ -183,6 +197,9 @@ class PlaylistTrack(SQLAlchemyObjectType):
         interfaces = (gp.relay.Node, )
 
 
+# ... and build up the queries/mutations that we can perform on the Graph QL schema objects.
+# These will also go into the Graph QL schema
+
 class Chinook(gp.ObjectType):
     version = gp.String()
     # use SQLAlchemyConnectionField to build up queries for
@@ -199,6 +216,7 @@ class Chinook(gp.ObjectType):
     all_tracks = SQLAlchemyConnectionField(Track.connection)
     all_invoice_items = SQLAlchemyConnectionField(InvoiceItem.connection)
     all_playlist_tracks = SQLAlchemyConnectionField(PlaylistTrack.connection)
+    # make some custom GraphQL queries that filter on rows
     customer = gp.NonNull(gp.List(gp.NonNull(Customer)),
                           city=gp.String(default_value=''),
                           state=gp.String(default_value=''),
