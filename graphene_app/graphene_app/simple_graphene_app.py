@@ -245,12 +245,14 @@ class Chinook(gp.ObjectType):
         return query.all()
 
 
+# use Starlette to make an app (allows us to use async and ASGI, which will be handy
+# for more complicated Graph QL queries that will run multiple SQL queries)
 def get_app():
     routes = [
         Route("/simple-graphene/api/v1/",
               GraphQLApp(schema=gp.Schema(query=ToySimples))),
         Route("/chinook-graphene/api/v1/",
-              GraphQLApp(schema=gp.Schema(query=Chinook, types=[Customer]),
+              GraphQLApp(schema=gp.Schema(query=Chinook),
                          executor_class=AsyncioExecutor))
     ]
     return Starlette(routes=routes)
