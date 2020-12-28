@@ -150,6 +150,14 @@ def test_chinook_graphene_all_playlist_tracks():
     assert json.loads(r.text) == {'data': {'allPlaylistTracks': {'edges': [{'node': {'TrackId': '1'}}]}}}
 
 
+def test_chinook_graphene_all_employees():
+    c = TestClient(get_app())
+    r = c.post('/chinook-graphene/api/v1/',
+               json={'query': '{allEmployees(first: 1) {edges {node {Title}}}}'})
+    assert r.status_code == 200
+    assert json.loads(r.text) == {'data': {'allEmployees': {'edges': [{'node': {'Title': 'General Manager'}}]}}}
+
+
 def test_chinook_graphene_customer():
     c = TestClient(get_app())
     r = c.post('/chinook-graphene/api/v1/',

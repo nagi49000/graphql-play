@@ -189,6 +189,7 @@ class Chinook(gp.ObjectType):
     # Graphene objects above. Standard queries pull ALL rows
     node = gp.relay.Node.Field()
     all_customers = SQLAlchemyConnectionField(Customer.connection)
+    all_employees = SQLAlchemyConnectionField(Employee.connection)
     all_artists = SQLAlchemyConnectionField(Artist.connection)
     all_genres = SQLAlchemyConnectionField(Genre.connection)
     all_media_types = SQLAlchemyConnectionField(MediaType.connection)
